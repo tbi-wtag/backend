@@ -1,9 +1,9 @@
-from contextlib import asyncontextmanager #type: ignore
+from contextlib import asynccontextmanager #type: ignore
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 #Lifespan Context Manager: Manage Startup and Shutdown Events
-@asyncontextmanager
+@asynccontextmanager
 async def lifespan(app: FastAPI):
     print("System starting up: Initializing backend resources")
 
