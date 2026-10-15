@@ -1,31 +1,26 @@
-from contextlib import asynccontextmanager #type: ignore
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-#Lifespan Context Manager: Manage Startup and Shutdown Events
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    print("System starting up: Initializing backend resources")
-
-    yield
-
-    print("System shutting down: Cleaning up backend resources")
+from app.core.config import settings
+#from app.core.lifespan import lifespan
+#from app.middlewares.auth_middleware import AuthenticationMiddleware
+#from app.routes import routers
 
 app = FastAPI(
-    title = "FastAPI Backend",
-    description = "Backend API for the FastAPI project",
-    version = "1.0.0",
-    lifespan = lifespan, #type: ignore
+    title = settings.app.project_name,
+    version = settings.app.project_version,
+    #lifespan = lifespan,
 
 )
 
-# CORS Middleware Configuration
+#rate_limiter.register_rate_limiter(app)
+
+#app.add_middleware(AuthenticationMiddleware)
 app.add_middleware(
-    CORSMiddleware,   #Protective layer - to inspect request
-    allow_origins=["*"],  # Allow requests from any origin(frontend)
-    allow_credentials=True,  #Allow origin to send sensitive data
-    allow_methods=["*"],  # Allow all HTTP methods
-    allow_headers=["*"],  # allow all headers
+    CORSMiddleware,
+    allow_origins=settings.cors.origins,
+    allow_credentials=settings.cors.credentials,
+    allow_methods=settings.cors.methods,
+    allow_headers=settings.cors.headers,
+    max_age=settings.cors.max_age,
 )
-
-
