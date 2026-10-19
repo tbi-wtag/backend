@@ -20,9 +20,6 @@ class Session(Base, TimestampUUIDMixin):
         nullable=False,
         index=True,
     )
-
-    session_token: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
-
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),nullable=False)
 
     user: Mapped["User"] = relationship("User", back_populates="session")
