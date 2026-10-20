@@ -21,6 +21,7 @@ services:
       - db
     volumes:
       - .:/backend
+      - /backend/.venv  # Keeps container's virtualenv isolated from host machine
 
 volumes:
   postgres_data:

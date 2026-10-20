@@ -2,7 +2,8 @@ import json
 import os
 from functools import cached_property,lru_cache
 
-from pydantic import Field, HttpUrl, computed_field, field_validator, List
+from pydantic import Field, HttpUrl, computed_field, field_validator
+from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class BaseConfigSettings(BaseSettings):
@@ -36,6 +37,12 @@ class DatabaseSettings(BaseConfigSettings):
         return f"postgresql+asyncpg://{self.user}:{self.password}@{self.server}:{self.port}/{self.db_name}"
 
 
+class JWTSettings(BaseConfigSettings):
+    secret_key: str = Field(..., alias="SECRET_KEY")
+    algorithm: str = Field("HS256", alias="ALGORITHM")
+    access_token_expire_minutes: int = Field(10080, alias="ACCESS_TOKEN_EXPIRE_MINUTES")
+
+
 class CorsSettings(BaseConfigSettings):
     origins: List[str] = Field(default_factory=list, alias="CORS_ORIGINS")
     methods: List[str] = Field(
@@ -46,10 +53,10 @@ class CorsSettings(BaseConfigSettings):
     max_age: int = Field(600, ge=0)
 
 
-
 class Settings(BaseConfigSettings):
     app: AppSettings = Field(default_factory=AppSettings) #type: ignore
     database: DatabaseSettings = Field(default_factory=DatabaseSettings) #type: ignore
+    jwt: JWTSettings = Field(default_factory=JWTSettings) #type: ignore
     cors: CorsSettings = Field(default_factory=CorsSettings) #type: ignore
 
 @lru_cache()

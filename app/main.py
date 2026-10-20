@@ -5,6 +5,7 @@ from app.core.config import settings
 #from app.core.lifespan import lifespan
 #from app.middlewares.auth_middleware import AuthenticationMiddleware
 #from app.routes import routers
+from app.api.v1.router import api_v1_router
 
 app = FastAPI(
     title = settings.app.project_name,
@@ -24,3 +25,9 @@ app.add_middleware(
     allow_headers=settings.cors.headers,
     max_age=settings.cors.max_age,
 )
+
+app.include_router(api_v1_router, prefix = "/api/v1")
+
+@app.get("/")
+async def root():
+    return {"message": f"Welcome to {settings.app.project_name} API"}
