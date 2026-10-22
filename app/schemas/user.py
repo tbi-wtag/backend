@@ -1,6 +1,7 @@
 import uuid
+import re
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator,field_validator
 
 class UserBase(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
@@ -11,6 +12,27 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str = Field(..., min_length=8, max_length=255)
     confirm_password: str = Field(..., min_length=8, max_length=255)
+
+    @field_validator("password")
+    @classmethod
+    def validate_password_strength(cls, password: str):
+        if not re.search(r"[A-Z]", password):
+            raise ValueError("Password must contain at least one uppercase letter.")
+        if not re.search(r"[a-z]",password):
+            raise ValueError("Password must contain at least one lowercase letter.")
+        if not re.search(r"\d",password):
+            raise ValueError("Password must contain at least one numeric digit.")
+
+        special_char_regex = r"[~!@#\$^\*_\{\}\|:\?`\-=\[\];'\,\\./]"
+        if not re.search(special_char_regex, password):
+            raise ValueError(
+                "Password must contain at least one special character "
+                "(e.g., ~ ! @ # $ ^ * _ { } | : ? ` - = [ ] ; ' , . /)."
+            )
+
+        return password
+
+
 
     @model_validator(mode="after")
     def verify_password_match(self) -> "UserCreate":

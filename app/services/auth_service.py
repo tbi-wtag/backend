@@ -13,7 +13,7 @@ from app.schemas.user import UserResponse
 
 
 async def login_user(db: AsyncSession, credentials: LoginRequest) -> LoginResponse:
-    result = await db.execute(select(User).where(User.username == credentials.username))
+    result = await db.execute(select(User).where(User.email == credentials.email))
     user = result.scalars().first()
 
     if not user or not verify_password(credentials.password, user.hashed_password):
