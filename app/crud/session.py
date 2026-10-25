@@ -22,7 +22,7 @@ async def get_session_by_id(db: AsyncSession, session_id: uuid.UUID) -> SessionM
     result = await db.execute(select(SessionModel).where(SessionModel.id == session_id))
     return result.scalars().first()
 
-async def get_active_user_by_session(db: AsyncSession, user_id: uuid.UUID, session_id = uuid.UUID) -> User | None:
+async def get_active_user_by_session(db: AsyncSession, user_id: uuid.UUID, session_id: uuid.UUID) -> User | None:
     query = (
         select(User)
         .join(SessionModel, SessionModel.user_id == User.id)
