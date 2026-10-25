@@ -2,13 +2,13 @@ from uuid import UUID
 from datetime import datetime, timezone
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import decode_access_token
 from app.db.session import get_db
 from app.models.session import Session as SessionModel
 from app.models.user import User
+from app.crud import session as crud_session
 
 bearer_scheme = HTTPBearer(auto_error = False)
 
@@ -41,22 +41,12 @@ async def get_current_user(
         except (ValueError, TypeError):
             raise CREDENTIAL_EXCEPTION
 
-        query = (select(User).join(SessionModel, SessionModel.user_id == User.id)
-                .where(
-                    User.id == user_id,
-                    User.is_active.is_(True),
-                    SessionModel.id == session_id,
-                    SessionModel.expires_at > datetime.now(timezone.utc),
-                )
+        user = await crud_session.get_active_user_by_session(
+            db, user_id=user_id, session_id = session_id
         )
-
-        result = await db.execute(query)
-        user = result.scalars().first()
 
         if not user:
             raise CREDENTIAL_EXCEPTION
 
         return user
 
-
-__all__ = ["get_db", "get_current_user"]

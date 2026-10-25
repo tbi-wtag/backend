@@ -10,7 +10,7 @@ from app.schemas.auth import LoginRequest, LoginResponse
 from app.services.auth_service import login_user
 from app.services.user_service import register_user
 from app.api.dependencies import get_current_user
-
+from app.services import auth_service
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -47,8 +47,7 @@ async def get_me(current_user: User = Depends(get_current_user)) -> User:
 
 @router.get("/logout",status_code = status.HTTP_200_OK)
 async def logout(response: Response, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    await db.execute(delete(SessionModel).where(SessionModel.user_id == current_user.id))
-    await db.commit()
+    await auth_service.logout_user(db, user_id = current_user.id)
 
     response.delete_cookie(key = "access_token")
 
