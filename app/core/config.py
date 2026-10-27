@@ -1,9 +1,7 @@
-import json
-import os
-from functools import cached_property,lru_cache
+from functools import lru_cache
 
-from pydantic import Field, HttpUrl, computed_field, field_validator
-from typing import List
+from pydantic import Field, computed_field, field_validator
+from typing import List, Literal
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class BaseConfigSettings(BaseSettings):
@@ -17,7 +15,7 @@ class AppSettings(BaseConfigSettings):
     project_name: str = Field("Project", alias= "PROJECT_NAME")
     project_version: str = Field("0.1.0", alias= "PROJECT_VERSION")
 
-
+    log_level: Literal["DEBUG" , "INFO" , "WARNING" , "ERROR" , "CRITICAL" ] = "INFO"
 
 class DatabaseSettings(BaseConfigSettings):
     user: str = Field(...,alias="POSTGRES_USER")

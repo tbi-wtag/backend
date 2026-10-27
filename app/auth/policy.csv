@@ -1,0 +1,72 @@
+# ROLE INHERITANCE
+g, trainer_football, user
+g, trainer_badminton, user
+g, trainer_tennis, user
+g, trainer_volleyball, user
+g, trainer_swimming, user
+
+g, admin, trainer_football
+g, admin, trainer_badminton
+g, admin, trainer_tennis
+g, admin, trainer_volleyball
+g, admin, trainer_swimming
+
+
+# USER PERMISSIONS
+# Profile management
+p, user, /api/v1/users/me, GET|PUT|PATCH
+p, user, /api/v1/auth/logout, POST
+
+# Sports & Slots availability
+p, user, /api/v1/sports, GET
+p, user, /api/v1/sports/:sport/slots, GET
+
+# Manage own bookings
+p, user, /api/v1/bookings/my, GET
+p, user, /api/v1/bookings, POST
+p, user, /api/v1/bookings/:id, GET
+p, user, /api/v1/bookings/:id/cancel, POST|PUT
+p, user, /api/v1/bookings/:id/payment, POST
+
+
+#SPORT-SPECIFIC TRAINER PERMISSIONS
+# Football Trainer
+p, trainer_football, /api/v1/sports/football/bookings, GET
+p, trainer_football, /api/v1/sports/football/bookings/*, GET
+p, trainer_football, /api/v1/sports/football/bookings/:id/cancel, POST|PUT
+
+# Badminton Trainer
+p, trainer_badminton, /api/v1/sports/badminton/bookings, GET
+p, trainer_badminton, /api/v1/sports/badminton/bookings/*, GET
+p, trainer_badminton, /api/v1/sports/badminton/bookings/:id/cancel, POST|PUT
+
+# Tennis Trainer
+p, trainer_tennis, /api/v1/sports/tennis/bookings, GET
+p, trainer_tennis, /api/v1/sports/tennis/bookings/*, GET
+p, trainer_tennis, /api/v1/sports/tennis/bookings/:id/cancel, POST|PUT
+
+# Volleyball Trainer
+p, trainer_volleyball, /api/v1/sports/volleyball/bookings, GET
+p, trainer_volleyball, /api/v1/sports/volleyball/bookings/*, GET
+p, trainer_volleyball, /api/v1/sports/volleyball/bookings/:id/cancel, POST|PUT
+
+# Swimming Trainer
+p, trainer_swimming, /api/v1/sports/swimming/bookings, GET
+p, trainer_swimming, /api/v1/sports/swimming/bookings/*, GET
+p, trainer_swimming, /api/v1/sports/swimming/bookings/:id/cancel, POST|PUT
+
+
+# ADMIN PERMISSIONS
+# Resource management
+p, admin, /api/v1/admin/resources, .*
+p, admin, /api/v1/admin/resources/*, .*
+p, admin, /api/v1/admin/opening-hours, .*
+p, admin, /api/v1/admin/time-blocks, .*
+
+# System reports
+p, admin, /api/v1/admin/reports, GET
+p, admin, /api/v1/admin/reports/*, GET
+
+# User Management
+p, admin, /api/v1/admin/users, .*
+p, admin, /api/v1/admin/users/*, .*

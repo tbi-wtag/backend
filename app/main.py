@@ -3,8 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 #from app.core.lifespan import lifespan
-#from app.middlewares.auth_middleware import AuthenticationMiddleware
-#from app.routes import routers
+from app.middlewares.auth_middleware import AuthenticationMiddleware
 from app.api.v1.router import api_v1_router
 
 app = FastAPI(
@@ -16,7 +15,8 @@ app = FastAPI(
 
 #rate_limiter.register_rate_limiter(app)
 
-#app.add_middleware(AuthenticationMiddleware)
+app.add_middleware(AuthenticationMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors.origins,
