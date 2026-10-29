@@ -7,7 +7,7 @@ from app.core.security import decode_access_token, extract_token
 from app.schemas.auth import UserSession
 
 BASE_DIR = Path(__file__).resolve().parent
-MODEL_PATH = str(BASE_DIR / "model.conf")
+MODEL_PATH = str(BASE_DIR / "rbac_model.conf")
 POLICY_PATH = str(BASE_DIR / "policy.csv")
 
 enforcer = casbin.Enforcer(MODEL_PATH, POLICY_PATH)
