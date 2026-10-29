@@ -6,10 +6,11 @@ from app.auth.dependencies import get_current_user_for_middleware, check_user_pr
 from app.core.logger import logger
 from app.middlewares.context import current_user_context, request_context
 
+
 class AuthenticationMiddleware(BaseHTTPMiddleware):
 
-    public_endpoints: set[tuple[str,str]] = {
-        ("GET",""),
+    public_endpoints: set[tuple[str, str]] = {
+        ("GET", ""),
         ("GET", "/docs"),
         ("GET", "/redoc"),
         ("GET", "/openapi.json"),
@@ -34,7 +35,6 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
                     "client_host": request.client.host if request.client else "unknown",
                     "user_agent": request.headers.get("User-Agent", ""),
                     "query_params": dict(request.query_params),
-
                 }
             )
 
@@ -48,43 +48,51 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
 
             current_user_context.set(
                 {
-                    "user_id" : str(user_session.user_id),
-                    "session_id":str(user_session.session_id),
+                    "user_id": str(user_session.user_id),
+                    "session_id": str(user_session.session_id),
                     "email": user_session.email,
-                    "role": user_session.role
-
+                    "role": user_session.role,
                 }
             )
 
-            check_user_privileges(user_session.role ,api_path, method)
+            check_user_privileges(user_session.role, api_path, method)
 
             request.state.user = user_session
             response = await call_next(request)
             return response
-        
+
         except HTTPException as exc:
             user_email = user_session.email if user_session else "unknown"
-            logger.warning(f"Authentication failed for user {user_email} on {method} {api_path}: {exc.detail}",
-                            extra = {
-                                "method": method,
-                                "path": api_path,
-                                "client_host": request.client.host if request.client else "unknown",
-                                "user_agent": request.headers.get("User-Agent", ""),
-                        },
-                        )
-            return JSONResponse(status_code = exc.status_code, content = {"detail": exc.detail}, headers = exc.headers or {})
-        
+            logger.warning(
+                f"Authentication failed for user {user_email} on {method} {api_path}: {exc.detail}",
+                extra={
+                    "method": method,
+                    "path": api_path,
+                    "client_host": request.client.host if request.client else "unknown",
+                    "user_agent": request.headers.get("User-Agent", ""),
+                },
+            )
+            return JSONResponse(
+                status_code=exc.status_code,
+                content={"detail": exc.detail},
+                headers=exc.headers or {},
+            )
+
         except Exception as exc:
             user_email = user_session.email if user_session else "unknown"
-            logger.error(f"Unexpected error in authentication middleware for user {user_email}: {str(exc)}",
-                        extra = { 
-                                "method": method,
-                                "path": api_path,
-                                "client_host": request.client.host if request.client else "unknown",
-                                "user_agent": request.headers.get("User-Agent", ""),
-                        },
-                        exc_info = True
-                        )
-            return JSONResponse(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR, content = {"detail": "An unexpected server error occurred during authentication"})
-            
-
+            logger.error(
+                f"Unexpected error in authentication middleware for user {user_email}: {str(exc)}",
+                extra={
+                    "method": method,
+                    "path": api_path,
+                    "client_host": request.client.host if request.client else "unknown",
+                    "user_agent": request.headers.get("User-Agent", ""),
+                },
+                exc_info=True,
+            )
+            return JSONResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={
+                    "detail": "An unexpected server error occurred during authentication"
+                },
+            )

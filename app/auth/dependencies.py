@@ -32,8 +32,8 @@ async def get_current_user_for_middleware(request: Request) -> UserSession:
         return UserSession(
             user_id=uuid.UUID(str(payload["sub"])),
             session_id=uuid.UUID(str(payload["session_id"])),
-            email = payload["email"],
-            role = payload["role"]
+            email=payload["email"],
+            role=payload["role"],
         )
     except (KeyError, ValueError, TypeError) as exc:
         raise HTTPException(
