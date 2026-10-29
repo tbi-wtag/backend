@@ -27,14 +27,11 @@ async def get_current_user(
         raise CREDENTIAL_EXCEPTION
 
     try:
-        user_id = UUID(str(payload.get("sub")))
         session_id = UUID(str(payload["session_id"]))
     except KeyError, ValueError, TypeError:
         raise CREDENTIAL_EXCEPTION
 
-    user = await crud_session.get_active_user_by_session(
-        db, user_id=user_id, session_id=session_id
-    )
+    user = await crud_session.get_active_user_by_session(db, session_id=session_id)
     if not user:
         raise CREDENTIAL_EXCEPTION
 

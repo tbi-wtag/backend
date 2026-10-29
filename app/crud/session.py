@@ -31,13 +31,12 @@ async def get_session_by_id(
 
 
 async def get_active_user_by_session(
-    db: AsyncSession, user_id: uuid.UUID, session_id: uuid.UUID
+    db: AsyncSession, session_id: uuid.UUID
 ) -> User | None:
     query = (
         select(User)
         .join(SessionModel, SessionModel.user_id == User.id)
         .where(
-            User.id == user_id,
             User.is_active.is_(True),
             SessionModel.id == session_id,
             SessionModel.expires_at > datetime.now(timezone.utc),

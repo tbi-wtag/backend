@@ -13,8 +13,8 @@ g, admin, trainer_swimming
 
 
 # USER PERMISSIONS
-# Profile management
-p, user, /api/v1/users/me, GET|PUT|PATCH
+# Current authenticated identity & profile management
+p, user, /api/v1/auth/me, GET|PUT|PATCH
 p, user, /api/v1/auth/logout, POST
 
 # Sports & Slots availability
@@ -29,7 +29,7 @@ p, user, /api/v1/bookings/:id/cancel, POST|PUT
 p, user, /api/v1/bookings/:id/payment, POST
 
 
-#SPORT-SPECIFIC TRAINER PERMISSIONS
+# SPORT-SPECIFIC TRAINER PERMISSIONS
 # Football Trainer
 p, trainer_football, /api/v1/sports/football/bookings, GET
 p, trainer_football, /api/v1/sports/football/bookings/*, GET
