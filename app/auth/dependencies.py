@@ -1,5 +1,5 @@
 from pathlib import Path
-import uuid
+from uuid import UUID
 import casbin
 from fastapi import HTTPException, Request, status
 
@@ -31,11 +31,11 @@ async def get_current_user_for_middleware(request: Request) -> UserSession:
         )
 
     try:
-        session_id = uuid.UUID(str(payload["session_id"]))
-    except (KeyError, ValueError, TypeError) as exc:
+        session_id = UUID(payload["session_id"])
+    except (KeyError, ValueError, TypeError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Malformed token payload: {str(exc)}",
+            detail= "Invalid or missing session identification in token"
         )
 
     async with AsyncSessionLocal() as db:
