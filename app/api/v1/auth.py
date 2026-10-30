@@ -1,16 +1,17 @@
-from fastapi import APIRouter, Depends, status, Response
+from fastapi import APIRouter, Depends, status, Response, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import delete
 
-from app.api.dependencies import get_db
+from app.db.session import get_db
 from app.models.user import User
 from app.models.session import Session as SessionModel
 from app.schemas.user import UserCreate, UserResponse
-from app.schemas.auth import LoginRequest, LoginResponse
+from app.schemas.auth import LoginRequest, LoginResponse, UserSession
 from app.services.auth_service import login_user
 from app.services.user_service import register_user
-from app.api.dependencies import get_current_user
+from app.auth.dependencies import get_current_user
 from app.services import auth_service
+from app.crud import user as crud_user
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -47,18 +48,32 @@ async def login(
 
 
 @router.get("/me", response_model=UserResponse)
-async def get_me(current_user: User = Depends(get_current_user)) -> User:
-    return current_user
+async def get_me(
+    current_user: UserSession = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    user = await crud_user.get_user_by_id(db, user_id=current_user.user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+    return user
 
 
 @router.post("/logout", status_code=status.HTTP_200_OK)
 async def logout(
     response: Response,
-    current_user: User = Depends(get_current_user),
+    current_user: UserSession = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    await auth_service.logout_user(db, user_id=current_user.id)
+    await auth_service.logout_user(db, user_id=current_user.user_id)
 
-    response.delete_cookie(key="access_token")
+    response.delete_cookie(
+        key="access_token",
+        path="/",
+        httponly=True,
+        samesite="lax",
+    )
 
     return {"message": "Successfully logged out"}
