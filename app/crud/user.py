@@ -3,6 +3,7 @@ from app.models.user import User
 from app.schemas.user import UserCreate
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.schemas.enums import UserRole
 
 
 async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
@@ -29,7 +30,7 @@ async def create_user(
         first_name=user_in.first_name,
         last_name=user_in.last_name,
         hashed_password=hashed_password,
-        role="user",
+        role=UserRole.USER.value,
     )
     db.add(new_user)
     await db.commit()
