@@ -1,9 +1,10 @@
 import asyncio
-from sqlalchemy import select, or_
+from sqlalchemy import select
 
 from app.db.session import AsyncSessionLocal
 from app.core.security import hash_password
 from app.models.user import User
+from app.schemas.enums import UserRole
 
 INITIAL_USER = [
     {
@@ -12,7 +13,7 @@ INITIAL_USER = [
         "last_name": "Bissessur",
         "email": "tejal@gmail.com",
         "password": "abc123456",
-        "role": "admin",
+        "role": UserRole.ADMIN,
         "is_active": True,
     },
     {
@@ -21,7 +22,7 @@ INITIAL_USER = [
         "last_name": "Doe",
         "email": "john@gmail.com",
         "password": "abc123456",
-        "role": "user",
+        "role": UserRole.USER,
         "is_active": True,
     },
 ]
@@ -29,7 +30,6 @@ INITIAL_USER = [
 
 async def seed_users() -> None:
     async with AsyncSessionLocal() as db:
-
         for user_data in INITIAL_USER:
             result = await db.execute(
                 select(User).where(
@@ -40,7 +40,7 @@ async def seed_users() -> None:
             existing_user = result.scalars().first()
 
             if existing_user:
-                print(f" User '{user_data['username']}' already exists.")
+                print(f"User '{user_data['username']}' already exists.")
                 continue
 
             new_user = User(

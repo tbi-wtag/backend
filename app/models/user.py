@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
-from sqlalchemy import String, Index, text
+from sqlalchemy import Enum, String, Index, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
+from app.schemas.enums import UserRole
 from app.db.base import Base, TimestampUUIDMixin
 
 if TYPE_CHECKING:
@@ -20,11 +20,19 @@ class User(Base, TimestampUUIDMixin):
         String(100), unique=True, nullable=False, index=True
     )
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
-    role: Mapped[str] = mapped_column(
-        String(50), nullable=False, default="user", server_default="user"
+    role: Mapped[UserRole] = mapped_column(
+        Enum(
+            UserRole,
+            native_enum=False,
+            length=50,
+            values_callable=lambda x: [e.value for e in x],
+        ),
+        nullable=False,
+        default=UserRole.USER,
+        server_default=text(f"'{UserRole.USER.value}'"),
     )
     is_active: Mapped[bool] = mapped_column(
-        nullable=False, default=True, server_default=("true")
+        nullable=False, default=True, server_default=text(("true"))
     )
 
     session: Mapped["Session | None"] = relationship(
@@ -39,6 +47,6 @@ class User(Base, TimestampUUIDMixin):
             "ix_unique_admin_role",
             "role",
             unique=True,
-            postgresql_where=text("role = 'admin'"),
+            postgresql_where=text(f"role = '{UserRole.ADMIN.value}'"),
         ),
     )
