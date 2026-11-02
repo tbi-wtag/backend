@@ -17,3 +17,13 @@ class Sport(Base, TimestampUUIDMixin):
     min_hours: Mapped[int] = mapped_column(SmallInteger, nullable=False, default=1)
     max_hours: Mapped[int] = mapped_column(SmallInteger, nullable=False, default=3)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+    resources: Mapped[list["Resource"]] = relationship(
+        "Resource", back_populates="sport"
+    )
+
+    operating_hours: Mapped[list["OperatingHour"]] = relationship(
+        "OperatingHour", back_populates="sport", cascade="all, delete-orphan"
+    )
+
+    bookings: Mapped[list["Booking"]] = relationship("Booking", back_populates="sport")

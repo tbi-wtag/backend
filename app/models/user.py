@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 from sqlalchemy import String, Index, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -6,6 +6,10 @@ from app.db.base import Base, TimestampUUIDMixin
 
 if TYPE_CHECKING:
     from app.models.session import Session
+    from app.models.booking import Booking
+    from app.models.booking_series import BookingSeries
+    from app.models.payment import Payment
+    from app.models.resource_block import ResourceBlock
 
 
 class User(Base, TimestampUUIDMixin):
@@ -32,6 +36,26 @@ class User(Base, TimestampUUIDMixin):
         back_populates="user",
         uselist=False,
         cascade="all, delete-orphan",
+    )
+
+    bookings: Mapped[List["Booking"]] = relationship(
+        "Booking",
+        back_populates="user",
+    )
+
+    booking_series: Mapped[List["BookingSeries"]] = relationship(
+        "BookingSeries",
+        back_populates="user",
+    )
+
+    payments: Mapped[List["Payment"]] = relationship(
+        "Payment",
+        back_populates="user",
+    )
+
+    resource_blocks: Mapped[List["ResourceBlock"]] = relationship(
+        "ResourceBlock",
+        back_populates="creator",
     )
 
     __table_args__ = (
