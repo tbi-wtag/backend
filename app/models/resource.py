@@ -1,6 +1,15 @@
 import uuid
-from typing import TYPE_CHECKING, Optional
-from sqlalchemy import String, Integer, Boolean, Numeric, UUID, ForeignKey
+from typing import TYPE_CHECKING
+from sqlalchemy import (
+    String,
+    Integer,
+    Boolean,
+    Numeric,
+    UUID,
+    ForeignKey,
+    UniqueConstraint,
+    CheckConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from decimal import Decimal
 
@@ -37,4 +46,14 @@ class Resource(Base, TimestampUUIDMixin):
 
     booking_resources: Mapped[list["BookingResource"]] = relationship(
         "BookingResource", back_populates="resource"
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "sport_id", "resource_name", name="uq_resource_sport_resource_name"
+        ),
+        CheckConstraint("capacity > 0", name="check_capacity_positive"),
+        CheckConstraint(
+            "price_per_hour >= 0", name="check_price_per_hour_non_negative"
+        ),
     )

@@ -2,7 +2,14 @@ import uuid
 from datetime import time
 from typing import TYPE_CHECKING
 
-from sqlalchemy import SmallInteger, Time, ForeignKey, UUID
+from sqlalchemy import (
+    SmallInteger,
+    Time,
+    ForeignKey,
+    UUID,
+    CheckConstraint,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampUUIDMixin
@@ -26,3 +33,13 @@ class OperatingHour(Base, TimestampUUIDMixin):
     )
 
     sport: Mapped["Sport"] = relationship("Sport", back_populates="operating_hours")
+
+    __table_args__ = (
+        UniqueConstraint(
+            "sport_id", "weekday", name="uq_operating_hours_sport_weekday"
+        ),
+        CheckConstraint(
+            "open_time < close_time", name="check_open_time_before_close_time"
+        ),
+        CheckConstraint("weekday >= 0 AND weekday <= 6", name="check_weekday_range"),
+    )

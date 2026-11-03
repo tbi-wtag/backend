@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
-from sqlalchemy import Text, DateTime, UUID, ForeignKey
+from sqlalchemy import Text, DateTime, UUID, ForeignKey, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampUUIDMixin
@@ -42,4 +42,10 @@ class ResourceBlock(Base, TimestampUUIDMixin):
 
     resource: Mapped["Resource"] = relationship(
         "Resource", back_populates="resource_blocks"
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "end_at > start_at", name="check_resource_block_end_after_start"
+        ),
     )

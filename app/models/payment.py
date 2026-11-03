@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING, Optional
-from sqlalchemy import DateTime, Numeric, String, Text, Index, ForeignKey, UUID
+from sqlalchemy import DateTime, Numeric, String, ForeignKey, UUID, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampUUIDMixin
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 class Payment(Base, TimestampUUIDMixin):
-    __tablename__: str = "payment"
+    __tablename__: str = "payments"
 
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     status: Mapped[str] = mapped_column(
@@ -53,10 +53,25 @@ class Payment(Base, TimestampUUIDMixin):
 
     user: Mapped["User"] = relationship("User", back_populates="payments")
 
-    series: Mapped[Optional["BookingSeries"]] = relationship(
+    booking_series: Mapped[Optional["BookingSeries"]] = relationship(
         "BookingSeries", back_populates="payments"
     )
 
     booking: Mapped[Optional["Booking"]] = relationship(
         "Booking", back_populates="payments"
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "(booking_id IS NOT NULL AND series_id IS NULL) OR "
+            "(booking_id IS NULL AND series_id IS NOT NULL)",
+            name="check_booking_or_series",
+        ),
+        CheckConstraint("amount >= 0", name="check_amount_non_negative"),
+        CheckConstraint(
+            "refunded_amount >= 0", name="check_refunded_amount_non_negative"
+        ),
+        CheckConstraint(
+            "refunded_amount <= amount", name="check_refunded_amount_not_exceed_amount"
+        ),
     )

@@ -2,7 +2,7 @@ import uuid
 from typing import TYPE_CHECKING, List
 from datetime import date
 
-from sqlalchemy import Date, UUID, ForeignKey
+from sqlalchemy import Date, UUID, ForeignKey, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampUUIDMixin
@@ -32,4 +32,12 @@ class BookingSeries(Base, TimestampUUIDMixin):
         "Booking", back_populates="booking_series"
     )
 
-    payments: Mapped[List["Payment"]] = relationship("Payment", back_populates="series")
+    payments: Mapped[List["Payment"]] = relationship(
+        "Payment", back_populates="booking_series"
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "end_at > start_at", name="check_booking_series_end_after_start"
+        ),
+    )

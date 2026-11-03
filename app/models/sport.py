@@ -1,12 +1,12 @@
 from typing import TYPE_CHECKING
-from sqlalchemy import String, Integer, Boolean, SmallInteger
+from sqlalchemy import String, Boolean, SmallInteger, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampUUIDMixin
 
 if TYPE_CHECKING:
     from app.models.booking import Booking
-    from app.models.operating_hours import OperatingHour
+    from app.models.operating_hour import OperatingHour
     from app.models.resource import Resource
 
 
@@ -27,3 +27,10 @@ class Sport(Base, TimestampUUIDMixin):
     )
 
     bookings: Mapped[list["Booking"]] = relationship("Booking", back_populates="sport")
+
+    __table_args__ = (
+        CheckConstraint("min_hours > 0", name="check_min_hours_positive"),
+        CheckConstraint(
+            "max_hours >= min_hours", name="check_max_hours_greater_than_min_hours"
+        ),
+    )

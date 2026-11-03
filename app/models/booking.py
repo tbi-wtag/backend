@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from sqlalchemy import (
     String,
-    Index,
+    CheckConstraint,
     DateTime,
     Integer,
     SmallInteger,
@@ -83,4 +83,14 @@ class Booking(Base, TimestampUUIDMixin):
 
     payments: Mapped[list["Payment"]] = relationship(
         "Payment", back_populates="booking"
+    )
+
+    __table_args__ = (
+        CheckConstraint("end_at > start_at", name="check_booking_end_after_start"),
+        CheckConstraint(
+            "number_of_people > 0", name="check_booking_number_of_people_positive"
+        ),
+        CheckConstraint(
+            "total_price >= 0", name="check_booking_total_price_non_negative"
+        ),
     )

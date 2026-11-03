@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, List
-from sqlalchemy import String, Index, text
+from sqlalchemy import String, Index, text, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampUUIDMixin
@@ -28,7 +28,7 @@ class User(Base, TimestampUUIDMixin):
         String(50), nullable=False, default="user", server_default="user"
     )
     is_active: Mapped[bool] = mapped_column(
-        nullable=False, default=True, server_default=("true")
+        Boolean, nullable=False, default=True, server_default=("true")
     )
 
     session: Mapped["Session | None"] = relationship(

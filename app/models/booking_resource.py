@@ -1,7 +1,14 @@
 import uuid
 from typing import TYPE_CHECKING
 from datetime import datetime
-from sqlalchemy import DateTime, Boolean, ForeignKey, UUID
+from sqlalchemy import (
+    DateTime,
+    Boolean,
+    ForeignKey,
+    UUID,
+    UniqueConstraint,
+    CheckConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampUUIDMixin
@@ -42,4 +49,11 @@ class BookingResource(Base, TimestampUUIDMixin):
 
     booking: Mapped["Booking"] = relationship(
         "Booking", back_populates="booking_resources"
+    )
+
+    __table_args__ = (
+        UniqueConstraint("booking_id", "resource_id", name="unique_booking_resource"),
+        CheckConstraint(
+            "end_at > start_at", name="check_booking_resources_end_after_start"
+        ),
     )
