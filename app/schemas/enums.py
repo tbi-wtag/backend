@@ -1,4 +1,5 @@
 from enum import Enum
+from pydantic import BaseModel
 
 
 class UserRole(str, Enum):
@@ -11,6 +12,10 @@ class UserRole(str, Enum):
     TRAINER_SWIMMING = "trainer_swimming"
 
     ADMIN = "admin"
+
+
+class UserBase(BaseModel):
+    role: UserRole = UserRole.USER
 
 
 class SportType(str, Enum):

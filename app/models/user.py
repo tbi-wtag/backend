@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING
-from sqlalchemy import Enum, String, Index, text
+from sqlalchemy import String, Index, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.schemas.enums import UserRole
 from app.db.base import Base, TimestampUUIDMixin
@@ -20,15 +20,10 @@ class User(Base, TimestampUUIDMixin):
         String(100), unique=True, nullable=False, index=True
     )
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
-    role: Mapped[UserRole] = mapped_column(
-        Enum(
-            UserRole,
-            native_enum=False,
-            length=50,
-            values_callable=lambda x: [e.value for e in x],
-        ),
+    role: Mapped[str] = mapped_column(
+        String(50),
         nullable=False,
-        default=UserRole.USER,
+        default=UserRole.USER.value,
         server_default=text(f"'{UserRole.USER.value}'"),
     )
     is_active: Mapped[bool] = mapped_column(
