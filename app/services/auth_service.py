@@ -35,7 +35,6 @@ async def login_user(db: AsyncSession, credentials: LoginRequest) -> LoginRespon
     )
 
     token_payload = {
-        "sub": str(user.id),
         "session_id": str(db_session.id),
     }
     access_token = create_access_token(data=token_payload)

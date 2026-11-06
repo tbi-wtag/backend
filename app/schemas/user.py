@@ -9,6 +9,25 @@ from pydantic import (
     model_validator,
     field_validator,
 )
+from app.schemas.enums import UserRole
+
+
+def validate_password_strength(password: str):
+    if not re.search(r"[A-Z]", password):
+        raise ValueError("Password must contain at least one uppercase letter.")
+    if not re.search(r"[a-z]", password):
+        raise ValueError("Password must contain at least one lowercase letter.")
+    if not re.search(r"\d", password):
+        raise ValueError("Password must contain at least one numeric digit.")
+
+    special_char_regex = r"[~!@#\$^\*_\{\}\|:\?`\-=\[\];'\,\\./]"
+    if not re.search(special_char_regex, password):
+        raise ValueError(
+            "Password must contain at least one special character "
+            "(e.g., ~ ! @ # $ ^ * _ { } | : ? ` - = [ ] ; ' , . /)."
+        )
+
+    return password
 
 
 class UserBase(BaseModel):
@@ -24,22 +43,8 @@ class UserCreate(UserBase):
 
     @field_validator("password")
     @classmethod
-    def validate_password_strength(cls, password: str):
-        if not re.search(r"[A-Z]", password):
-            raise ValueError("Password must contain at least one uppercase letter.")
-        if not re.search(r"[a-z]", password):
-            raise ValueError("Password must contain at least one lowercase letter.")
-        if not re.search(r"\d", password):
-            raise ValueError("Password must contain at least one numeric digit.")
-
-        special_char_regex = r"[~!@#\$^\*_\{\}\|:\?`\-=\[\];'\,\\./]"
-        if not re.search(special_char_regex, password):
-            raise ValueError(
-                "Password must contain at least one special character "
-                "(e.g., ~ ! @ # $ ^ * _ { } | : ? ` - = [ ] ; ' , . /)."
-            )
-
-        return password
+    def check_password_complexity(cls, value: str) -> str:
+        return validate_password_strength(value)
 
     @model_validator(mode="after")
     def verify_password_match(self) -> "UserCreate":
@@ -60,6 +65,11 @@ class UserPasswordUpdate(BaseModel):
     new_password: str = Field(..., min_length=8, max_length=255)
     confirm_new_password: str = Field(..., min_length=8, max_length=255)
 
+    @field_validator("new_password")
+    @classmethod
+    def check_new_password_complexity(cls, value: str) -> str:
+        return validate_password_strength(value)
+
     @model_validator(mode="after")
     def verify_new_password_match(self) -> "UserPasswordUpdate":
         if self.new_password != self.confirm_new_password:
@@ -69,7 +79,7 @@ class UserPasswordUpdate(BaseModel):
 
 class UserResponse(UserBase):
     id: uuid.UUID
-    role: str
+    role: UserRole
     created_at: datetime
     updated_at: datetime
 
