@@ -41,7 +41,7 @@ def do_run_migrations(connection):
 async def run_async_migrations() -> None:
     """Run migrations in 'online' mode using asyncpg engine."""
     configuration = config.get_section(config.config_ini_section) or {}
-    
+
     # Use async_url (postgresql+asyncpg://) instead of psycopg2
     configuration["sqlalchemy.url"] = settings.database.async_url
 

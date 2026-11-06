@@ -1,22 +1,34 @@
 from typing import TYPE_CHECKING
 from sqlalchemy import String, Index, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
+from app.schemas.enums import UserRole
 from app.db.base import Base, TimestampUUIDMixin
 
 if TYPE_CHECKING:
-    from app.models.session import Session  
+    from app.models.session import Session
+
 
 class User(Base, TimestampUUIDMixin):
     __tablename__: str = "users"
 
-    username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+    username: Mapped[str] = mapped_column(
+        String(50), unique=True, nullable=False, index=True
+    )
     first_name: Mapped[str] = mapped_column(String(50), nullable=False)
     last_name: Mapped[str] = mapped_column(String(50), nullable=False)
-    email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
+    email: Mapped[str] = mapped_column(
+        String(100), unique=True, nullable=False, index=True
+    )
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
-    role: Mapped[str] = mapped_column(String(50), nullable=False, default="user", server_default="user")
-    is_active: Mapped[bool]= mapped_column(nullable=False, default=True, server_default=("true"))
+    role: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+        default=UserRole.USER.value,
+        server_default=text(f"'{UserRole.USER.value}'"),
+    )
+    is_active: Mapped[bool] = mapped_column(
+        nullable=False, default=True, server_default=text(("true"))
+    )
 
     session: Mapped["Session | None"] = relationship(
         "Session",
@@ -28,9 +40,8 @@ class User(Base, TimestampUUIDMixin):
     __table_args__ = (
         Index(
             "ix_unique_admin_role",
-                    "role",
-                    unique=True,
-                    postgresql_where=text("role = 'admin'"),
+            "role",
+            unique=True,
+            postgresql_where=text(f"role = '{UserRole.ADMIN.value}'"),
         ),
     )
-
