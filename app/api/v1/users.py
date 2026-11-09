@@ -1,7 +1,7 @@
 import uuid
 from typing import Any, Dict
-from app.schemas.user import UserUpdate, UserResponse
-from fastapi import APIRouter, Depends
+from app.schemas.user import UserUpdate, UserResponse, UserPasswordUpdate
+from fastapi import APIRouter, Depends, status, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.user import User
 from app.auth.dependencies import get_current_user_from_db
@@ -31,3 +31,24 @@ async def update_user_profile(
         current_user=current_user,
         update_data=update_data,
     )
+
+
+@router.post("/me/change-password", status_code=status.HTTP_200_OK)
+async def chage_password(
+    data: UserPasswordUpdate,
+    reponse: Response,
+    current_user: User = Depends(get_current_user_from_db),
+    db: AsyncSession = Depends(get_db),
+):
+    await user_service.change_user_password(db=db, user=current_user, data=data)
+
+    reponse.delete_cookie(
+        key="access_token",
+        path="/",
+        httponly=True,
+        samesite="lax",
+    )
+
+    return {
+        "message": "Password updated successfully. Please log in again with your new credentials."
+    }

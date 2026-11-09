@@ -1,10 +1,11 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import hash_password
-from app.schemas.user import UserCreate
+from app.core.security import hash_password, verify_password
+from app.schemas.user import UserCreate, UserPasswordUpdate
 from app.crud import user
 from app.models.user import User
+from app.services.auth_service import logout_user
 
 
 async def check_email_unique(db: AsyncSession, email: str) -> None:
@@ -54,3 +55,27 @@ async def update_user_profile(
         user=current_user,
         update_data=update_data,
     )
+
+
+async def change_user_password(
+    db: AsyncSession,
+    user: User,
+    data: UserPasswordUpdate,
+) -> None:
+
+    if not verify_password(data.old_password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect old password"
+        )
+
+    if data.old_password == data.new_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password cannot be the same as the old password",
+        )
+
+    user.hashed_password = hash_password(data.new_password)
+    await db.commit()
+    await db.refresh(user)
+
+    await logout_user(db, user_id=user.id)
