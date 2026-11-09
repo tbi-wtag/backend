@@ -1,4 +1,5 @@
 import uuid
+from typing import Any, Dict
 from app.models.user import User
 from app.schemas.user import UserCreate
 from sqlalchemy import select
@@ -36,3 +37,24 @@ async def create_user(
     await db.commit()
     await db.refresh(new_user)
     return new_user
+
+
+async def update_user_details(
+    db: AsyncSession, user: User, update_data: Dict[str, Any]
+) -> User:
+    disallowed_fields = {
+        "id",
+        "hashed_password",
+        "role",
+        "is_active",
+        "created_at",
+        "updated_at",
+    }
+
+    for key, value in update_data.items():
+        if key not in disallowed_fields and hasattr(user, key):
+            setattr(user, key, value)
+
+    await db.commit()
+    await db.refresh(user)
+    return user

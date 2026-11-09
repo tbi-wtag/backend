@@ -5,7 +5,6 @@ from app.schemas.user import UserResponse
 from app.schemas.enums import UserRole
 
 
-
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str

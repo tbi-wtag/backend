@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING
-from sqlalchemy import String, Boolean, SmallInteger, CheckConstraint, Integer, Boolean 
+from sqlalchemy import String, Boolean, SmallInteger, CheckConstraint, Integer, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampUUIDMixin
