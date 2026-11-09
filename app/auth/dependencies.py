@@ -1,11 +1,14 @@
 from pathlib import Path
 from uuid import UUID
+from app.models.user import User
 import casbin
-from fastapi import HTTPException, Request, status
+from fastapi import Depends, HTTPException, Request, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import decode_access_token, extract_token
+from app.crud.user import get_user_by_id
 from app.crud.session import get_active_user_by_session
-from app.db.session import AsyncSessionLocal
+from app.db.session import AsyncSessionLocal, get_db
 from app.schemas.auth import UserSession
 from app.schemas.enums import UserRole
 
@@ -56,11 +59,11 @@ async def get_current_user_for_middleware(request: Request) -> UserSession:
 
 
 def check_user_privileges(role: UserRole, api_path: str, method: str) -> None:
-    is_authorized = enforcer.enforce(role, api_path, method)
+    is_authorized = enforcer.enforce(role.value, api_path, method)
     if not is_authorized:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Forbidden: Role '{role}' cannot execute '{method}' on '{api_path}'",
+            detail=f"Forbidden: Role '{role.value}' cannot execute '{method}' on '{api_path}'",
         )
 
 
@@ -70,5 +73,18 @@ def get_current_user(request: Request) -> UserSession:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not authenticated in request state",
+        )
+    return user
+
+
+async def get_current_user_from_db(
+    request: Request, db: AsyncSession = Depends(get_db)
+) -> User:
+    user_session: UserSession = get_current_user(request)
+
+    user = await get_user_by_id(db, user_id=user_session.user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
     return user
