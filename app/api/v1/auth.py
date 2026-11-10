@@ -47,20 +47,6 @@ async def login(
     return login_data
 
 
-@router.get("/me", response_model=UserResponse)
-async def get_me(
-    current_user: UserSession = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-) -> User:
-    user = await crud_user.get_user_by_id(db, user_id=current_user.user_id)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-    return user
-
-
 @router.post("/logout", status_code=status.HTTP_200_OK)
 async def logout(
     response: Response,

@@ -14,8 +14,9 @@ g, admin, trainer_swimming
 
 # USER PERMISSIONS
 # Current authenticated identity & profile management
-p, user, /api/v1/auth/me, GET|PUT|PATCH
+p, user, /api/v1/users/me, GET|PUT|PATCH
 p, user, /api/v1/auth/logout, POST
+p, user, /api/v1/users/me/change-password, POST
 
 # Sports & Slots availability
 p, user, /api/v1/sports, GET
