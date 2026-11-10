@@ -1,46 +1,52 @@
 import uuid
 from datetime import datetime, timezone
+from typing import Optional
 from app.models.session import Session as SessionModel
 from app.models.user import User
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.crud.base import CRUDBase
+from app.schemas.session import SessionCreate, SessionUpdate
 
 
-async def delete_by_user_id(db: AsyncSession, user_id: uuid.UUID) -> None:
-    await db.execute(delete(SessionModel).where(SessionModel.user_id == user_id))
-    await db.flush()
+class CRUDSession(CRUDBase[SessionModel, SessionCreate, SessionUpdate]):
 
+    async def create_session(
+        self,
+        db: AsyncSession,
+        *,
+        user_id: uuid.UUID,
+        expires_at: datetime,
+        flush: bool = True,
+    ) -> SessionModel:
+        session_in = SessionCreate(user_id=user_id, expires_at=expires_at)
+        return await self.create(db, obj_in=session_in, flush=flush)
 
-async def create_session(
-    db: AsyncSession, user_id: uuid.UUID, expires_at: datetime
-) -> SessionModel:
-    db_session = SessionModel(
-        user_id=user_id,
-        expires_at=expires_at,
-    )
-    db.add(db_session)
-    await db.flush()
-    return db_session
+    async def delete_by_user_id(
+        self, db: AsyncSession, *, user_id: uuid.UUID, flush: bool = True
+    ) -> None:
+        await db.execute(delete(self.model).where(self.model.user_id == user_id))
 
+        if flush:
+            await db.flush()
+        else:
+            await db.commit()
 
-async def get_session_by_id(
-    db: AsyncSession, session_id: uuid.UUID
-) -> SessionModel | None:
-    result = await db.execute(select(SessionModel).where(SessionModel.id == session_id))
-    return result.scalars().first()
-
-
-async def get_active_user_by_session(
-    db: AsyncSession, session_id: uuid.UUID
-) -> User | None:
-    query = (
-        select(User)
-        .join(SessionModel, SessionModel.user_id == User.id)
-        .where(
-            User.is_active.is_(True),
-            SessionModel.id == session_id,
-            SessionModel.expires_at > datetime.now(timezone.utc),
+    async def get_active_user_by_session(
+        self, db: AsyncSession, *, session_id: uuid.UUID | str
+    ) -> Optional[User]:
+        query = (
+            select(User)
+            .join(self.model, self.model.user_id == User.id)
+            .where(
+                User.is_active.is_(True),
+                self.model.id == session_id,
+                self.model.expires_at > datetime.now(timezone.utc),
+            )
         )
-    )
-    result = await db.execute(query)
-    return result.scalars().first()
+
+        result = await db.execute(query)
+        return result.scalars().first()
+
+
+crud_session = CRUDSession(SessionModel)

@@ -6,8 +6,8 @@ from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import decode_access_token, extract_token
-from app.crud.user import get_user_by_id
-from app.crud.session import get_active_user_by_session
+from app.crud.user import crud_user
+from app.crud.session import crud_session
 from app.db.session import AsyncSessionLocal, get_db
 from app.schemas.auth import UserSession
 from app.schemas.enums import UserRole
@@ -43,7 +43,7 @@ async def get_current_user_for_middleware(request: Request) -> UserSession:
         )
 
     async with AsyncSessionLocal() as db:
-        user = await get_active_user_by_session(db, session_id=session_id)
+        user = await crud_session.get_active_user_by_session(db, session_id=session_id)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -82,7 +82,7 @@ async def get_current_user_from_db(
 ) -> User:
     user_session: UserSession = get_current_user(request)
 
-    user = await get_user_by_id(db, user_id=user_session.user_id)
+    user = await crud_user.get(db, id=user_session.user_id)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"

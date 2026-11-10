@@ -3,13 +3,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import hash_password, verify_password
 from app.schemas.user import UserCreate, UserPasswordUpdate
-from app.crud import user
 from app.models.user import User
 from app.services.auth_service import logout_user
+from app.crud.user import crud_user
 
 
 async def check_email_unique(db: AsyncSession, email: str) -> None:
-    existing_user = await user.get_user_by_email(db, email=email)
+    existing_user = await crud_user.get_by_email(db, email=email)
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -18,7 +18,7 @@ async def check_email_unique(db: AsyncSession, email: str) -> None:
 
 
 async def check_username_unique(db: AsyncSession, username: str) -> None:
-    existing_user = await user.get_user_by_username(db, username=username)
+    existing_user = await crud_user.get_by_username(db, username=username)
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -32,7 +32,7 @@ async def register_user(db: AsyncSession, user_in: UserCreate):
 
     hashed_pwd = hash_password(user_in.password)
 
-    return await user.create_user(db, user_in=user_in, hashed_password=hashed_pwd)
+    return await crud_user.create_user(db, user_in=user_in, hashed_password=hashed_pwd)
 
 
 async def update_user_profile(
@@ -50,10 +50,10 @@ async def update_user_profile(
     if "username" in update_data and update_data["username"] != current_user.username:
         await check_username_unique(db, username=update_data["username"])
 
-    return await user.update_user_details(
+    return await crud_user.update_user_details(
         db=db,
         user=current_user,
-        update_data=update_data,
+        obj_in=update_data,
     )
 
 
