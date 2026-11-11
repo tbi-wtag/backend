@@ -20,6 +20,7 @@ async def get_me(
 
 @router.patch("/me", response_model=UserResponse)
 async def update_user_profile(
+    request: Request, 
     user_in: UserUpdate,
     current_user: User = Depends(get_current_user_from_db),
     db: AsyncSession = Depends(get_db),
@@ -29,21 +30,22 @@ async def update_user_profile(
         db=db,
         current_user=current_user,
         update_data=update_data,
+        request=request,  
     )
 
 
 @router.post("/me/change-password", status_code=status.HTTP_200_OK)
 @limiter.limit("5/minute")
-async def chage_password(
+async def change_password(
     request: Request,
     data: UserPasswordUpdate,
-    reponse: Response,
+    response: Response,
     current_user: User = Depends(get_current_user_from_db),
     db: AsyncSession = Depends(get_db),
 ):
     await user_service.change_user_password(db=db, user=current_user, data=data)
 
-    reponse.delete_cookie(
+    response.delete_cookie(
         key="access_token",
         path="/",
         httponly=True,

@@ -10,6 +10,7 @@ from app.models.booking_series import BookingSeries
 from app.models.booking import Booking
 from app.models.booking_resource import BookingResource
 from app.models.payment import Payment
+from app.models.audit_log import AuditLog
 
 __all__ = [
     "User",
@@ -22,4 +23,5 @@ __all__ = [
     "Booking",
     "BookingResource",
     "Payment",
+    "AuditLog"
 ]
