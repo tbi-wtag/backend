@@ -6,6 +6,7 @@ from app.core.config import settings
 # from app.core.lifespan import lifespan
 from app.middlewares.auth_middleware import AuthenticationMiddleware
 from app.api.v1.router import api_v1_router
+from app.core.rate_limiter import rate_limiter
 
 app = FastAPI(
     title=settings.app.project_name,
@@ -13,7 +14,7 @@ app = FastAPI(
     # lifespan = lifespan,
 )
 
-# rate_limiter.register_rate_limiter(app)
+rate_limiter.register_rate_limiter(app)
 
 app.add_middleware(AuthenticationMiddleware)
 

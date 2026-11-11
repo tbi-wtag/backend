@@ -11,11 +11,12 @@ from app.schemas.auth import LoginRequest, LoginResponse, TokenResponse
 from app.schemas.session import SessionResponse
 from app.schemas.user import UserResponse
 from app.crud import user as crud_user
-from app.crud import session as crud_session
+from app.crud.session import crud_session
+from app.crud.user import crud_user
 
 
 async def login_user(db: AsyncSession, credentials: LoginRequest) -> LoginResponse:
-    user = await crud_user.get_user_by_email(db, email=credentials.email)
+    user = await crud_user.get_by_email(db, email=credentials.email)
 
     if not user or not verify_password(credentials.password, user.hashed_password):
         raise HTTPException(
