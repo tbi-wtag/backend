@@ -1,10 +1,12 @@
-from fastapi import HTTPException, status
+from typing import Optional
+from fastapi import HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import hash_password, verify_password
 from app.schemas.user import UserCreate, UserPasswordUpdate
 from app.models.user import User
 from app.services.auth_service import logout_user
+from app.services.audit_service import audit_service
 from app.crud.user import crud_user
 
 
@@ -26,17 +28,31 @@ async def check_username_unique(db: AsyncSession, username: str) -> None:
         )
 
 
-async def register_user(db: AsyncSession, user_in: UserCreate):
+async def register_user(db: AsyncSession, user_in: UserCreate, request: Optional[Request] = None):
     await check_email_unique(db, email=user_in.email)
     await check_username_unique(db, username=user_in.username)
 
     hashed_pwd = hash_password(user_in.password)
 
-    return await crud_user.create_user(db, user_in=user_in, hashed_password=hashed_pwd)
+    new_user = await crud_user.create_user(db, user_in=user_in, hashed_password=hashed_pwd)
 
+    await audit_service.log_event(
+        db=db,
+        action="USER_REGISTER",
+        user_id=str(new_user.id),
+        request=request,
+        status="SUCCESS",
+        details={"email": new_user.email, "username": new_user.username},
+        flush=True,
+    )
 
+    await db.commit()
+    await db.refresh(new_user)
+
+    return new_user
+    
 async def update_user_profile(
-    db: AsyncSession, current_user: User, update_data: dict
+    db: AsyncSession, current_user: User, update_data: dict, request: Optional[Request] = None
 ) -> User:
     if not update_data:
         raise HTTPException(
@@ -50,17 +66,33 @@ async def update_user_profile(
     if "username" in update_data and update_data["username"] != current_user.username:
         await check_username_unique(db, username=update_data["username"])
 
-    return await crud_user.update_user_details(
+    
+    updated_user = await crud_user.update_user_details(
         db=db,
         user=current_user,
         obj_in=update_data,
     )
 
+    await audit_service.log_event(
+        db=db,
+        action="USER_UPDATE_PROFILE",
+        user_id=str(updated_user.id),
+        request=request,
+        status="SUCCESS",
+        details={"updated_fields": list(update_data.keys())},
+        flush=True,
+    )
+
+    await db.commit()
+    await db.refresh(updated_user)
+
+    return updated_user
 
 async def change_user_password(
     db: AsyncSession,
     user: User,
     data: UserPasswordUpdate,
+    request: Optional[Request] = None
 ) -> None:
 
     if not verify_password(data.old_password, user.hashed_password):
@@ -75,7 +107,20 @@ async def change_user_password(
         )
 
     user.hashed_password = hash_password(data.new_password)
+
+    await audit_service.log_event(
+        db=db,
+        action="USER_CHANGE_PASSWORD",
+        user_id=str(user.id),
+        request=request,
+        status="SUCCESS",
+        details={"revoked_sessions": True},
+        flush=True,
+    )
+
+    await logout_user(db, user_id=user.id)
+    
     await db.commit()
     await db.refresh(user)
 
-    await logout_user(db, user_id=user.id)
+    
