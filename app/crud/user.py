@@ -31,7 +31,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         role: UserRole = UserRole.USER,
         flush: bool = False,
     ) -> User:
-        user_data = user_in.model_dump(exclude={"password","confirm_password"})
+        user_data = user_in.model_dump(exclude={"password", "confirm_password"})
         user_data["hashed_password"] = hashed_password
         user_data["role"] = role.value
 
