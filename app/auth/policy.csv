@@ -14,11 +14,13 @@ g, admin, trainer_swimming
 
 # USER PERMISSIONS
 # Current authenticated identity & profile management
-p, user, /api/v1/auth/me, GET|PUT|PATCH
+p, user, /api/v1/users/me, GET|PUT|PATCH
 p, user, /api/v1/auth/logout, POST
+p, user, /api/v1/users/me/change-password, POST
 
 # Sports & Slots availability
 p, user, /api/v1/sports, GET
+p, user, /api/v1/sports/:sport_id, GET
 p, user, /api/v1/sports/:sport/slots, GET
 
 # Manage own bookings
@@ -70,3 +72,7 @@ p, admin, /api/v1/admin/reports/*, GET
 # User Management
 p, admin, /api/v1/admin/users, .*
 p, admin, /api/v1/admin/users/*, .*
+
+# Sports Management
+p, admin, /api/v1/sports, POST
+p, admin, /api/v1/sports/:sport_id, PATCH|DELETE
