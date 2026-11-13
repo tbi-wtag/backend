@@ -23,5 +23,5 @@ __all__ = [
     "Booking",
     "BookingResource",
     "Payment",
-    "AuditLog"
+    "AuditLog",
 ]

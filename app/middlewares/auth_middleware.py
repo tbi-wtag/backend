@@ -61,7 +61,11 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         except HTTPException as exc:
             user_email = user_session.email if user_session else "unknown"
             logger.warning(
-                f"Authentication failed for user {user_email} on {method} {api_path}: {exc.detail}",
+                "Authentication failed for user {} on {} {}: {}",
+                user_email,
+                method,
+                api_path,
+                exc.detail,
                 extra={
                     "method": method,
                     "path": api_path,
@@ -78,7 +82,9 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         except Exception as exc:
             user_email = user_session.email if user_session else "unknown"
             logger.error(
-                f"Unexpected error in authentication middleware for user {user_email}: {str(exc)}",
+                "Unexpected error in authentication middleware for user {}: {}",
+                user_email,
+                str(exc),
                 extra={
                     "method": method,
                     "path": api_path,

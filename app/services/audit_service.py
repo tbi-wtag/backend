@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.rate_limiter import RateLimiter
 from app.crud.audit_log import crud_audit_log
 from app.models.audit_log import AuditLog
+from app.middlewares.context import current_user_context
 
 
 class AuditService:
@@ -25,6 +26,7 @@ class AuditService:
         flush: bool = True,
     ) -> AuditLog:
         ip = cls._extract_ip(request)
+        user_id = user_id or (current_user_context.get() or {}).get("user_id")
         actor_label = f"user_id={user_id}" if user_id else f"ip={ip}"
         detail_str = f" | details={details}" if details else ""
 
