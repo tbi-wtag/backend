@@ -18,6 +18,7 @@ class AppSettings(BaseConfigSettings):
     project_version: str = Field("0.1.0", alias="PROJECT_VERSION")
 
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
+    rate_limiter_enable: bool = Field(True, alias="RATE_LIMITER_ENABLE")
 
 
 class DatabaseSettings(BaseConfigSettings):
@@ -54,11 +55,24 @@ class CorsSettings(BaseConfigSettings):
     max_age: int = Field(600, ge=0)
 
 
+class RedisSettings(BaseConfigSettings):
+    host: str = Field(..., alias="REDIS_HOST")
+    port: int = Field(6379, alias="REDIS_PORT", ge=1, le=65535)
+    db: int = Field(0, alias="REDIS_DB", ge=0, le=15)
+    password: str = Field(..., alias="REDIS_PASSWORD")
+
+    @computed_field
+    @property
+    def url(self) -> str:
+        return f"redis://:{self.password}@{self.host}:{self.port}/{self.db}"
+
+
 class Settings(BaseConfigSettings):
     app: AppSettings = Field(default_factory=AppSettings)  # type: ignore
     database: DatabaseSettings = Field(default_factory=DatabaseSettings)  # type: ignore
     jwt: JWTSettings = Field(default_factory=JWTSettings)  # type: ignore
     cors: CorsSettings = Field(default_factory=CorsSettings)  # type: ignore
+    redis: RedisSettings = Field(default_factory=RedisSettings)  # type: ignore
 
 
 @lru_cache()
