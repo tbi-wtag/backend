@@ -1,12 +1,16 @@
 import uuid
+from decimal import Decimal
+from typing import Optional
 from fastapi import APIRouter, Depends, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_db
 from app.core.rate_limiter import limiter
+from app.models.resource import Resource
 from app.models.sport import Sport
+from app.schemas.resource import ResourceResponse
 from app.schemas.sport import SportCreate, SportResponse, SportUpdate
-from app.services import sport_service
+from app.services import sport_service, resource_service
 
 router = APIRouter(prefix="/sports", tags=["Sports"])
 
@@ -41,6 +45,31 @@ async def get_sport(
     db: AsyncSession = Depends(get_db),
 ) -> Sport:
     return await sport_service.get_sport_by_id(db=db, sport_id=sport_id)
+
+
+@router.get("/{sport_id}/resources", response_model=list[ResourceResponse])
+async def list_sport_resources(
+    sport_id: uuid.UUID,
+    is_active: Optional[bool] = True,
+    pitch_format: Optional[str] = None,
+    surface: Optional[str] = None,
+    min_capacity: Optional[int] = None,
+    max_price: Optional[Decimal] = None,
+    skip: int = 0,
+    limit: int = 100,
+    db: AsyncSession = Depends(get_db),
+) -> list[Resource]:
+    return await resource_service.get_resources_by_sport(
+        db=db,
+        sport_id=sport_id,
+        is_active=is_active,
+        pitch_format=pitch_format,
+        surface=surface,
+        min_capacity=min_capacity,
+        max_price=max_price,
+        skip=skip,
+        limit=limit,
+    )
 
 
 @router.patch("/{sport_id}", response_model=SportResponse)

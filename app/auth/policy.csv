@@ -22,6 +22,7 @@ p, user, /api/v1/users/me/change-password, POST
 p, user, /api/v1/sports, GET
 p, user, /api/v1/sports/:sport_id, GET
 p, user, /api/v1/sports/:sport/slots, GET
+p, user, /api/v1/sports/:sport_id/resources, GET
 
 # Manage own bookings
 p, user, /api/v1/bookings/my, GET
