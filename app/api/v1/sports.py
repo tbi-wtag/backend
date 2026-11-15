@@ -11,6 +11,9 @@ from app.models.sport import Sport
 from app.schemas.resource import ResourceResponse
 from app.schemas.sport import SportCreate, SportResponse, SportUpdate
 from app.services import sport_service, resource_service
+from app.models.operating_hour import OperatingHour
+from app.schemas.operating_hour import OperatingHourResponse
+from app.services import operating_hour_service
 
 router = APIRouter(prefix="/sports", tags=["Sports"])
 
@@ -69,6 +72,16 @@ async def list_sport_resources(
         max_price=max_price,
         skip=skip,
         limit=limit,
+    )
+
+
+@router.get("/{sport_id}/opening-hours", response_model=list[OperatingHourResponse])
+async def get_sport_opening_hours(
+    sport_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+) -> list[OperatingHour]:
+    return await operating_hour_service.get_operating_hours_by_sport(
+        db=db, sport_id=sport_id
     )
 
 

@@ -23,6 +23,7 @@ p, user, /api/v1/sports, GET
 p, user, /api/v1/sports/:sport_id, GET
 p, user, /api/v1/sports/:sport/slots, GET
 p, user, /api/v1/sports/:sport_id/resources, GET
+p, user, /api/v1/sports/:sport_id/opening-hours, GET
 
 # Manage own bookings
 p, user, /api/v1/bookings/my, GET
@@ -64,7 +65,9 @@ p, trainer_swimming, /api/v1/sports/swimming/bookings/:id/cancel, POST|PUT
 p, admin, /api/v1/admin/resources, .*
 p, admin, /api/v1/admin/resources/*, .*
 p, admin, /api/v1/admin/opening-hours, .*
+p, admin, /api/v1/admin/opening-hours/*, .*
 p, admin, /api/v1/admin/time-blocks, .*
+p, admin, /api/v1/admin/time-blocks/*, .*
 
 # System reports
 p, admin, /api/v1/admin/reports, GET
