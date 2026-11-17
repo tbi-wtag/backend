@@ -12,7 +12,6 @@ class BaseConfigSettings(BaseSettings):
         extra="allow",
     )
 
-
 class AppSettings(BaseConfigSettings):
     project_name: str = Field("Project", alias="PROJECT_NAME")
     project_version: str = Field("0.1.0", alias="PROJECT_VERSION")
@@ -66,6 +65,11 @@ class RedisSettings(BaseConfigSettings):
     def url(self) -> str:
         return f"redis://:{self.password}@{self.host}:{self.port}/{self.db}"
 
+class BookingSettings(BaseConfigSettings):
+    default_slot_duration_minutes: int = Field(60, alias="DEFAULT_SLOT_DURATION_MINUTES", gt=0)
+    slot_step_minutes: int = Field(60, alias="SLOT_STEP_MINUTES", gt=0)
+    pending_payment_hold_minutes: int = Field(15, alias="PENDING_PAYMENT_HOLD_MINUTES", gt=0)
+
 
 class Settings(BaseConfigSettings):
     app: AppSettings = Field(default_factory=AppSettings)  # type: ignore
@@ -73,7 +77,7 @@ class Settings(BaseConfigSettings):
     jwt: JWTSettings = Field(default_factory=JWTSettings)  # type: ignore
     cors: CorsSettings = Field(default_factory=CorsSettings)  # type: ignore
     redis: RedisSettings = Field(default_factory=RedisSettings)  # type: ignore
-
+    booking: BookingSettings = Field(default_factory=BookingSettings)  # type: ignore
 
 @lru_cache()
 def get_settings() -> Settings:

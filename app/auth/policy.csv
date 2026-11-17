@@ -22,6 +22,8 @@ p, user, /api/v1/users/me/change-password, POST
 p, user, /api/v1/sports, GET
 p, user, /api/v1/sports/:sport_id, GET
 p, user, /api/v1/sports/:sport/slots, GET
+p, user, /api/v1/slots/available, GET
+p, user, /api/v1/pricing/quote, POST
 p, user, /api/v1/sports/:sport_id/resources, GET
 p, user, /api/v1/sports/:sport_id/opening-hours, GET
 
