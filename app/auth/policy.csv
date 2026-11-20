@@ -82,3 +82,6 @@ p, admin, /api/v1/admin/users/*, .*
 # Sports Management
 p, admin, /api/v1/sports, POST
 p, admin, /api/v1/sports/:sport_id, PATCH|DELETE
+
+# Bookings Management
+p, admin, /api/v1/admin/bookings, GET

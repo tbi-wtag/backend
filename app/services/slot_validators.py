@@ -71,5 +71,3 @@ async def validate_slot_window(
         )
 
     return slot_start, slot_end
-
-

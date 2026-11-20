@@ -12,6 +12,7 @@ class BaseConfigSettings(BaseSettings):
         extra="allow",
     )
 
+
 class AppSettings(BaseConfigSettings):
     project_name: str = Field("Project", alias="PROJECT_NAME")
     project_version: str = Field("0.1.0", alias="PROJECT_VERSION")
@@ -65,10 +66,19 @@ class RedisSettings(BaseConfigSettings):
     def url(self) -> str:
         return f"redis://:{self.password}@{self.host}:{self.port}/{self.db}"
 
+
 class BookingSettings(BaseConfigSettings):
-    default_slot_duration_minutes: int = Field(60, alias="DEFAULT_SLOT_DURATION_MINUTES", gt=0)
+    default_slot_duration_minutes: int = Field(
+        60, alias="DEFAULT_SLOT_DURATION_MINUTES", gt=0
+    )
     slot_step_minutes: int = Field(60, alias="SLOT_STEP_MINUTES", gt=0)
-    pending_payment_hold_minutes: int = Field(15, alias="PENDING_PAYMENT_HOLD_MINUTES", gt=0)
+    pending_payment_hold_minutes: int = Field(
+        15, alias="PENDING_PAYMENT_HOLD_MINUTES", gt=0
+    )
+    cancellation_cutoff_hours: int = Field(24, alias="CANCELLATION_CUTOFF_HOURS", ge=0)
+    status_sync_interval_seconds: int = Field(
+        60, alias="STATUS_SYNC_INTERVAL_SECONDS", gt=0
+    )
 
 
 class Settings(BaseConfigSettings):
@@ -78,6 +88,7 @@ class Settings(BaseConfigSettings):
     cors: CorsSettings = Field(default_factory=CorsSettings)  # type: ignore
     redis: RedisSettings = Field(default_factory=RedisSettings)  # type: ignore
     booking: BookingSettings = Field(default_factory=BookingSettings)  # type: ignore
+
 
 @lru_cache()
 def get_settings() -> Settings:
