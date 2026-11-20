@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, status, Response, HTTPException
+from fastapi import APIRouter, Depends, status, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import delete
 
+from app.core.rate_limiter import limiter
 from app.db.session import get_db
 from app.models.user import User
 from app.models.session import Session as SessionModel
@@ -21,8 +22,14 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
     response_model=UserResponse,
     status_code=status.HTTP_201_CREATED,
 )
-async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)) -> User:
-    return await register_user(db=db, user_in=user_in)
+@limiter.limit("3/minute")
+async def register(
+    request: Request,
+    response: Response,
+    user_in: UserCreate,
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    return await register_user(db=db, user_in=user_in, request=request)
 
 
 @router.post(
@@ -30,8 +37,12 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)) -> U
     response_model=LoginResponse,
     status_code=status.HTTP_200_OK,
 )
+@limiter.limit("5/minute")
 async def login(
-    credentials: LoginRequest, response: Response, db: AsyncSession = Depends(get_db)
+    request: Request,
+    credentials: LoginRequest,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
 ) -> LoginResponse:
     login_data = await login_user(db=db, credentials=credentials)
 
@@ -45,20 +56,6 @@ async def login(
     )
 
     return login_data
-
-
-@router.get("/me", response_model=UserResponse)
-async def get_me(
-    current_user: UserSession = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-) -> User:
-    user = await crud_user.get_user_by_id(db, user_id=current_user.user_id)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-    return user
 
 
 @router.post("/logout", status_code=status.HTTP_200_OK)

@@ -18,6 +18,7 @@ class AppSettings(BaseConfigSettings):
     project_version: str = Field("0.1.0", alias="PROJECT_VERSION")
 
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
+    rate_limiter_enable: bool = Field(True, alias="RATE_LIMITER_ENABLE")
 
 
 class DatabaseSettings(BaseConfigSettings):
@@ -54,11 +55,39 @@ class CorsSettings(BaseConfigSettings):
     max_age: int = Field(600, ge=0)
 
 
+class RedisSettings(BaseConfigSettings):
+    host: str = Field(..., alias="REDIS_HOST")
+    port: int = Field(6379, alias="REDIS_PORT", ge=1, le=65535)
+    db: int = Field(0, alias="REDIS_DB", ge=0, le=15)
+    password: str = Field(..., alias="REDIS_PASSWORD")
+
+    @computed_field
+    @property
+    def url(self) -> str:
+        return f"redis://:{self.password}@{self.host}:{self.port}/{self.db}"
+
+
+class BookingSettings(BaseConfigSettings):
+    default_slot_duration_minutes: int = Field(
+        60, alias="DEFAULT_SLOT_DURATION_MINUTES", gt=0
+    )
+    slot_step_minutes: int = Field(60, alias="SLOT_STEP_MINUTES", gt=0)
+    pending_payment_hold_minutes: int = Field(
+        15, alias="PENDING_PAYMENT_HOLD_MINUTES", gt=0
+    )
+    cancellation_cutoff_hours: int = Field(24, alias="CANCELLATION_CUTOFF_HOURS", ge=0)
+    status_sync_interval_seconds: int = Field(
+        60, alias="STATUS_SYNC_INTERVAL_SECONDS", gt=0
+    )
+
+
 class Settings(BaseConfigSettings):
     app: AppSettings = Field(default_factory=AppSettings)  # type: ignore
     database: DatabaseSettings = Field(default_factory=DatabaseSettings)  # type: ignore
     jwt: JWTSettings = Field(default_factory=JWTSettings)  # type: ignore
     cors: CorsSettings = Field(default_factory=CorsSettings)  # type: ignore
+    redis: RedisSettings = Field(default_factory=RedisSettings)  # type: ignore
+    booking: BookingSettings = Field(default_factory=BookingSettings)  # type: ignore
 
 
 @lru_cache()
