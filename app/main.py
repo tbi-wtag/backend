@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 
-# from app.core.lifespan import lifespan
+from app.core.lifespan import lifespan
 from app.middlewares.auth_middleware import AuthenticationMiddleware
 from app.api.v1.router import api_v1_router
 from app.core.rate_limiter import rate_limiter
@@ -11,7 +11,7 @@ from app.core.rate_limiter import rate_limiter
 app = FastAPI(
     title=settings.app.project_name,
     version=settings.app.project_version,
-    # lifespan = lifespan,
+    lifespan=lifespan,
 )
 
 rate_limiter.register_rate_limiter(app)

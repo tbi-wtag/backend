@@ -61,5 +61,20 @@ class CRUDResource(CRUDBase[Resource, ResourceCreate, ResourceUpdate]):
         result = await db.execute(query)
         return list(result.scalars().all())
 
+    async def lock_active_by_ids(
+        self, db: AsyncSession, *, resource_ids: list[uuid.UUID]
+    ) -> list[Resource]:
+        if not resource_ids:
+            return []
+        result = await db.execute(
+            select(self.model)
+            .where(
+                self.model.id.in_(resource_ids),
+                self.model.is_active.is_(True),
+            )
+            .with_for_update()
+        )
+        return list(result.scalars().all())
+
 
 crud_resource = CRUDResource(Resource)
