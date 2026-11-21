@@ -47,6 +47,7 @@ class BookingResponse(BaseModel):
     reference: str
     user_id: uuid.UUID
     sport_id: uuid.UUID
+    series_id: Optional[uuid.UUID] = None
     sport_name: str
     start_at: datetime
     end_at: datetime
@@ -59,3 +60,5 @@ class BookingResponse(BaseModel):
     cancelled_at: Optional[datetime] = None
     created_at: datetime
     allocated_resources: list[AllocatedResourceItem]
+
+    model_config = ConfigDict(from_attributes=True)

@@ -22,6 +22,15 @@ def to_booking_response(booking: Booking) -> BookingResponse:
     latest_payment = (
         max(booking.payments, key=lambda p: p.created_at) if booking.payments else None
     )
+    if latest_payment is None and booking.series_id is not None:
+        series_payments = (
+            booking.booking_series.payments if booking.booking_series else []
+        )
+        latest_payment = (
+            max(series_payments, key=lambda p: p.created_at)
+            if series_payments
+            else None
+        )
     payment_status = latest_payment.status if latest_payment else "unpaid"
 
     resources = [
@@ -34,6 +43,7 @@ def to_booking_response(booking: Booking) -> BookingResponse:
         reference=booking.reference,
         user_id=booking.user_id,
         sport_id=booking.sport_id,
+        series_id=booking.series_id,
         sport_name=booking.sport.sport_name,
         start_at=booking.start_at,
         end_at=booking.end_at,

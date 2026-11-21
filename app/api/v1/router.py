@@ -10,15 +10,18 @@ from app.api.v1.slots import router as slots_router
 from app.api.v1.pricing import router as pricing_router
 from app.api.v1.booking import admin_router as admin_booking_router
 from app.api.v1.booking import router as booking_router
+from app.api.v1.booking_series import admin_router as admin_booking_series_router
+from app.api.v1.booking_series import router as booking_series_router
 
 api_v1_router = APIRouter()
 
 api_v1_router.include_router(auth_router, tags=["Authentication"])
 api_v1_router.include_router(users_router, tags=["Users"])
 api_v1_router.include_router(sports_router, tags=["Sports"])
-api_v1_router.include_router(slots_router)
-api_v1_router.include_router(pricing_router)
-api_v1_router.include_router(booking_router)
+api_v1_router.include_router(slots_router, tags=["Slots"])
+api_v1_router.include_router(pricing_router, tags=["Pricing"])
+api_v1_router.include_router(booking_router, tags=["Bookings"])
+api_v1_router.include_router(booking_series_router, tags=["Booking Series"])
 api_v1_router.include_router(
     admin_resources_router, prefix="/admin", tags=["Admin - Resources"]
 )
@@ -30,4 +33,7 @@ api_v1_router.include_router(
 )
 api_v1_router.include_router(
     admin_booking_router, prefix="/admin", tags=["Admin - Bookings"]
+)
+api_v1_router.include_router(
+    admin_booking_series_router, prefix="/admin", tags=["Admin - Booking Series"]
 )
