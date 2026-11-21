@@ -8,6 +8,7 @@ from sqlalchemy.orm import selectinload
 from app.crud.base import CRUDBase
 from app.models.booking import Booking
 from app.models.booking_resource import BookingResource
+from app.models.booking_series import BookingSeries
 from app.schemas.booking import BookingCreate, BookingUpdate
 
 
@@ -19,6 +20,9 @@ class CRUDBooking(CRUDBase[Booking, BookingCreate, BookingUpdate]):
                 BookingResource.resource
             ),
             selectinload(self.model.payments),
+            selectinload(self.model.booking_series).selectinload(
+                BookingSeries.payments
+            ),
         )
 
     async def get_with_details(

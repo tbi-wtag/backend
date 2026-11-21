@@ -34,6 +34,13 @@ p, user, /api/v1/bookings/:id, GET
 p, user, /api/v1/bookings/:id/cancel, POST|PUT
 p, user, /api/v1/bookings/:id/payment, POST
 
+# Manage own booking series
+p, user, /api/v1/booking-series, POST
+p, user, /api/v1/booking-series/my, GET
+p, user, /api/v1/booking-series/:series_id, GET
+p, user, /api/v1/booking-series/:series_id/cancel, POST
+p, user, /api/v1/booking-series/:series_id/bookings/:booking_id/cancel, POST
+
 
 # SPORT-SPECIFIC TRAINER PERMISSIONS
 # Football Trainer
@@ -85,3 +92,4 @@ p, admin, /api/v1/sports/:sport_id, PATCH|DELETE
 
 # Bookings Management
 p, admin, /api/v1/admin/bookings, GET
+p, admin, /api/v1/admin/booking-series, GET
