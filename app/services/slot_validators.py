@@ -27,7 +27,7 @@ async def validate_slot_window(
     start_at: datetime,
     duration_minutes: int,
 ) -> tuple[datetime, datetime]:
-    sport = await sport_service.get_sport_by_id(db, sport_id=sport_id)
+    sport = await sport_service.get_sport_by_id(db, sport_id=sport_id, active_only=True)
     validate_duration(sport, duration_minutes)
 
     slot_start = (

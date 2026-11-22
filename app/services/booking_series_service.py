@@ -174,11 +174,11 @@ async def _cancel_series_weeks(
         if apply_series_week_refund_if_eligible(series, booking, now_utc):
             refund_initiated.append(booking.id)
 
-    if series.bookings and all(
-        booking.status == "cancelled" for booking in series.bookings
-    ):
-        for payment in series.payments:
-            if payment.status == "pending":
+    remaining = [b for b in series.bookings if b.status != "cancelled"]
+    for payment in series.payments:
+        if payment.status == "pending":
+            payment.amount = sum((b.total_price for b in remaining), Decimal("0.00"))
+            if series.bookings and not remaining:
                 payment.status = "cancelled"
 
     if was_paid:

@@ -1,6 +1,7 @@
 from typing import Optional, Sequence
 import uuid
 from fastapi import HTTPException, Request, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.sport import crud_sport
@@ -39,12 +40,17 @@ async def create_sport(
 async def get_sports(
     db: AsyncSession, skip: int = 0, limit: int = 100
 ) -> Sequence[Sport]:
-    return await crud_sport.get_multi(db, skip=skip, limit=limit)
+    query = select(Sport).where(Sport.is_active.is_(True)).order_by(
+        Sport.created_at.desc()
+    )
+    return (await db.scalars(query.offset(skip).limit(limit))).all()
 
 
-async def get_sport_by_id(db: AsyncSession, sport_id: uuid.UUID) -> Sport:
+async def get_sport_by_id(
+    db: AsyncSession, sport_id: uuid.UUID, active_only: bool = False
+) -> Sport:
     sport = await crud_sport.get(db, id=sport_id)
-    if not sport:
+    if not sport or (active_only and not sport.is_active):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Sport not found.",

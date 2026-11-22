@@ -47,7 +47,7 @@ async def get_sport(
     sport_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
 ) -> Sport:
-    return await sport_service.get_sport_by_id(db=db, sport_id=sport_id)
+    return await sport_service.get_sport_by_id(db, sport_id=sport_id, active_only=True)
 
 
 @router.get("/{sport_id}/resources", response_model=list[ResourceResponse])

@@ -172,10 +172,11 @@ async def pay_for_series(
     ensure_series_access(series, current_user)
 
     now_utc = datetime.now(timezone.utc)
-    if not series.bookings or any(
+    active_bookings = [b for b in series.bookings if b.status != "cancelled"]
+    if not active_bookings or any(
         booking.status != "pending"
         or (booking.expired_at is not None and booking.expired_at <= now_utc)
-        for booking in series.bookings
+        for booking in active_bookings
     ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -184,7 +185,7 @@ async def pay_for_series(
 
     payment = await crud_payment.get_latest_by_series_id(db, series_id=series.id)
     total_price = sum(
-        (booking.total_price for booking in series.bookings), Decimal("0.00")
+        (booking.total_price for booking in active_bookings), Decimal("0.00")
     )
     payment = _get_or_create_pending_payment(
         db,
@@ -201,7 +202,7 @@ async def pay_for_series(
         reference=f"BS-{series.id}",
     )
     if result.success:
-        for booking in series.bookings:
+        for booking in active_bookings:
             booking.status = "confirmed"
             booking.expired_at = None
 

@@ -34,7 +34,7 @@ async def search_available_slots(
     pitch_format: Optional[str] = None,
     surface: Optional[str] = None,
 ) -> SlotSearchResponse:
-    sport = await sport_service.get_sport_by_id(db, sport_id=sport_id)
+    sport = await sport_service.get_sport_by_id(db, sport_id=sport_id, active_only=True)
     if duration_minutes is None:
         duration_minutes = settings.booking.default_slot_duration_minutes
     validate_duration(sport, duration_minutes)
