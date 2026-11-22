@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.enums import UserRole
 from app.crud.base import CRUDBase
 from app.schemas.user import UserCreate, UserUpdate
-
+from app.core.constants import USER_DISALLOWED_UPDATE_FIELDS
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
@@ -51,15 +51,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             else obj_in.model_dump(exclude_unset=True)
         )
 
-        disallowed_fields = {
-            "id",
-            "hashed_password",
-            "role",
-            "is_active",
-            "created_at",
-            "updated_at",
-        }
-        for field in disallowed_fields:
+        for field in USER_DISALLOWED_UPDATE_FIELDS:
             update_data.pop(field, None)
 
         return await self.update(db, db_obj=user, obj_in=update_data, flush=flush)
