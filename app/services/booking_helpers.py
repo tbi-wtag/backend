@@ -69,18 +69,33 @@ def ensure_booking_access(booking: Booking, current_user: UserSession) -> None:
 
 def apply_refund_if_eligible(booking: Booking, now_utc: datetime) -> bool:
     cutoff = timedelta(hours=settings.booking.cancellation_cutoff_hours)
-    if (booking.start_at - now_utc) < cutoff:
+    if booking.start_at - now_utc <= cutoff:
         return False
 
-    paid_payment: Optional[Payment] = next(
-        (p for p in booking.payments if p.status == "paid"), None
+    paid_payment: Optional[Payment] = max(
+        (
+            payment
+            for payment in booking.payments
+            if payment.status in {"paid", "partially_refunded"}
+        ),
+        key=lambda payment: payment.created_at,
+        default=None,
     )
     if not paid_payment:
         return False
 
-    paid_payment.status = "refunded"
-    paid_payment.refunded_amount = paid_payment.amount
+    remaining_refundable = paid_payment.amount - paid_payment.refunded_amount
+    refund_amount = min(booking.total_price, remaining_refundable)
+    if refund_amount <= 0:
+        return False
+
+    paid_payment.refunded_amount += refund_amount
     paid_payment.refunded_at = now_utc
+    paid_payment.status = (
+        "refunded"
+        if paid_payment.refunded_amount >= paid_payment.amount
+        else "partially_refunded"
+    )
     return True
 
 

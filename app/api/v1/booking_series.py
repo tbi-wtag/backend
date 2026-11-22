@@ -8,7 +8,9 @@ from app.auth.dependencies import get_current_user, get_db
 from app.core.rate_limiter import limiter
 from app.schemas.auth import UserSession
 from app.schemas.booking_series import BookingSeriesResponse, MonthlyBookingCreate
+from app.schemas.payment import PaymentProcessRequest, PaymentResponse
 from app.services import booking_series_service
+from app.services import payment_service
 
 router = APIRouter(prefix="/booking-series", tags=["Booking Series"])
 admin_router = APIRouter(prefix="/booking-series")
@@ -58,6 +60,25 @@ async def get_booking_series(
         db=db,
         series_id=series_id,
         current_user=current_user,
+    )
+
+
+@router.post("/{series_id}/payment", response_model=PaymentResponse)
+@limiter.limit("10/minute")
+async def pay_for_booking_series(
+    series_id: uuid.UUID,
+    payment_in: PaymentProcessRequest,
+    request: Request,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+    current_user: UserSession = Depends(get_current_user),
+) -> PaymentResponse:
+    return await payment_service.pay_for_series(
+        db=db,
+        series_id=series_id,
+        payment_in=payment_in,
+        current_user=current_user,
+        request=request,
     )
 
 

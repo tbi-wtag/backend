@@ -168,19 +168,20 @@ def ensure_series_access(series: BookingSeries, current_user: UserSession) -> No
 def apply_series_week_refund_if_eligible(
     series: BookingSeries, booking: Booking, now_utc: datetime
 ) -> bool:
-    latest_payment = (
-        max(series.payments, key=lambda payment: payment.created_at)
-        if series.payments
-        else None
+    latest_payment = max(
+        (
+            payment
+            for payment in series.payments
+            if payment.status in {"paid", "partially_refunded"}
+        ),
+        key=lambda payment: payment.created_at,
+        default=None,
     )
-    if latest_payment is None or latest_payment.status not in {
-        "paid",
-        "partially_refunded",
-    }:
+    if latest_payment is None:
         return False
 
     cutoff = timedelta(hours=settings.booking.cancellation_cutoff_hours)
-    if booking.start_at - now_utc < cutoff:
+    if booking.start_at - now_utc <= cutoff:
         return False
 
     remaining_refundable = latest_payment.amount - latest_payment.refunded_amount
@@ -188,6 +189,9 @@ def apply_series_week_refund_if_eligible(
         return False
 
     refund_amount = min(booking.total_price, remaining_refundable)
+    if refund_amount <= Decimal("0.00"):
+        return False
+
     latest_payment.refunded_amount += refund_amount
     latest_payment.refunded_at = now_utc
     latest_payment.status = (
