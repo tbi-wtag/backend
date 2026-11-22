@@ -1,15 +1,5 @@
 # ROLE INHERITANCE
-g, trainer_football, user
-g, trainer_badminton, user
-g, trainer_tennis, user
-g, trainer_volleyball, user
-g, trainer_swimming, user
-
-g, admin, trainer_football
-g, admin, trainer_badminton
-g, admin, trainer_tennis
-g, admin, trainer_volleyball
-g, admin, trainer_swimming
+g, admin, user
 
 
 # USER PERMISSIONS
@@ -43,33 +33,6 @@ p, user, /api/v1/booking-series/:series_id/bookings/:booking_id/cancel, POST
 p, user, /api/v1/booking-series/:id/payment, POST
 p, user, /api/v1/payments/my, GET
 p, user, /api/v1/payments/:id, GET
-
-
-# SPORT-SPECIFIC TRAINER PERMISSIONS
-# Football Trainer
-p, trainer_football, /api/v1/sports/football/bookings, GET
-p, trainer_football, /api/v1/sports/football/bookings/*, GET
-p, trainer_football, /api/v1/sports/football/bookings/:id/cancel, POST|PUT
-
-# Badminton Trainer
-p, trainer_badminton, /api/v1/sports/badminton/bookings, GET
-p, trainer_badminton, /api/v1/sports/badminton/bookings/*, GET
-p, trainer_badminton, /api/v1/sports/badminton/bookings/:id/cancel, POST|PUT
-
-# Tennis Trainer
-p, trainer_tennis, /api/v1/sports/tennis/bookings, GET
-p, trainer_tennis, /api/v1/sports/tennis/bookings/*, GET
-p, trainer_tennis, /api/v1/sports/tennis/bookings/:id/cancel, POST|PUT
-
-# Volleyball Trainer
-p, trainer_volleyball, /api/v1/sports/volleyball/bookings, GET
-p, trainer_volleyball, /api/v1/sports/volleyball/bookings/*, GET
-p, trainer_volleyball, /api/v1/sports/volleyball/bookings/:id/cancel, POST|PUT
-
-# Swimming Trainer
-p, trainer_swimming, /api/v1/sports/swimming/bookings, GET
-p, trainer_swimming, /api/v1/sports/swimming/bookings/*, GET
-p, trainer_swimming, /api/v1/sports/swimming/bookings/:id/cancel, POST|PUT
 
 
 # ADMIN PERMISSIONS
