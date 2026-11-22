@@ -11,6 +11,7 @@ from app.crud.resource import crud_resource
 from app.crud.resource_block import crud_resource_block
 from app.models.booking import Booking
 from app.models.booking_resource import BookingResource
+from app.models.payment import Payment
 from app.schemas.auth import UserSession
 from app.schemas.booking import BookingCreate, BookingResponse
 from app.schemas.enums import UserRole
@@ -91,6 +92,15 @@ async def create_booking(
     db.add(booking)
     await db.flush()
 
+    db.add(
+        Payment(
+            user_id=current_user.user_id,
+            booking_id=booking.id,
+            series_id=None,
+            amount=booking.total_price,
+            status="pending",
+        )
+    )
     db.add_all(
         BookingResource(
             booking_id=booking.id,
@@ -182,12 +192,17 @@ async def cancel_booking(
             detail="Cannot cancel a booking that has already started or passed.",
         )
 
-    was_paid = any(p.status == "paid" for p in booking.payments)
+    was_paid = any(
+        p.status in {"paid", "partially_refunded", "refunded"} for p in booking.payments
+    )
 
     booking.status = "cancelled"
     booking.cancelled_at = now_utc
     for br in booking.booking_resources:
         br.is_active = False
+    for payment in booking.payments:
+        if payment.status == "pending":
+            payment.status = "cancelled"
 
     refund_initiated = apply_refund_if_eligible(booking, now_utc)
 
