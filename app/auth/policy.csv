@@ -14,12 +14,18 @@ g, admin, trainer_swimming
 
 # USER PERMISSIONS
 # Current authenticated identity & profile management
-p, user, /api/v1/auth/me, GET|PUT|PATCH
+p, user, /api/v1/users/me, GET|PUT|PATCH
 p, user, /api/v1/auth/logout, POST
+p, user, /api/v1/users/me/change-password, POST
 
 # Sports & Slots availability
 p, user, /api/v1/sports, GET
+p, user, /api/v1/sports/:sport_id, GET
 p, user, /api/v1/sports/:sport/slots, GET
+p, user, /api/v1/slots/available, GET
+p, user, /api/v1/pricing/quote, POST
+p, user, /api/v1/sports/:sport_id/resources, GET
+p, user, /api/v1/sports/:sport_id/opening-hours, GET
 
 # Manage own bookings
 p, user, /api/v1/bookings/my, GET
@@ -27,6 +33,16 @@ p, user, /api/v1/bookings, POST
 p, user, /api/v1/bookings/:id, GET
 p, user, /api/v1/bookings/:id/cancel, POST|PUT
 p, user, /api/v1/bookings/:id/payment, POST
+
+# Manage own booking series
+p, user, /api/v1/booking-series, POST
+p, user, /api/v1/booking-series/my, GET
+p, user, /api/v1/booking-series/:series_id, GET
+p, user, /api/v1/booking-series/:series_id/cancel, POST
+p, user, /api/v1/booking-series/:series_id/bookings/:booking_id/cancel, POST
+p, user, /api/v1/booking-series/:id/payment, POST
+p, user, /api/v1/payments/my, GET
+p, user, /api/v1/payments/:id, GET
 
 
 # SPORT-SPECIFIC TRAINER PERMISSIONS
@@ -61,7 +77,9 @@ p, trainer_swimming, /api/v1/sports/swimming/bookings/:id/cancel, POST|PUT
 p, admin, /api/v1/admin/resources, .*
 p, admin, /api/v1/admin/resources/*, .*
 p, admin, /api/v1/admin/opening-hours, .*
+p, admin, /api/v1/admin/opening-hours/*, .*
 p, admin, /api/v1/admin/time-blocks, .*
+p, admin, /api/v1/admin/time-blocks/*, .*
 
 # System reports
 p, admin, /api/v1/admin/reports, GET
@@ -70,3 +88,12 @@ p, admin, /api/v1/admin/reports/*, GET
 # User Management
 p, admin, /api/v1/admin/users, .*
 p, admin, /api/v1/admin/users/*, .*
+
+# Sports Management
+p, admin, /api/v1/sports, POST
+p, admin, /api/v1/sports/:sport_id, PATCH|DELETE
+
+# Bookings Management
+p, admin, /api/v1/admin/bookings, GET
+p, admin, /api/v1/admin/booking-series, GET
+p, admin, /api/v1/admin/payments, GET

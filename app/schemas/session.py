@@ -12,6 +12,10 @@ class SessionCreate(SessionBase):
     pass
 
 
+class SessionUpdate(SessionBase):
+    pass
+
+
 class SessionResponse(SessionBase):
     id: uuid.UUID
     created_at: datetime
