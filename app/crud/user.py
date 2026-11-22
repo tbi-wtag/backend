@@ -8,6 +8,7 @@ from app.crud.base import CRUDBase
 from app.schemas.user import UserCreate, UserUpdate
 from app.core.constants import USER_DISALLOWED_UPDATE_FIELDS
 
+
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
     async def get_by_email(self, db: AsyncSession, *, email: str) -> Optional[User]:

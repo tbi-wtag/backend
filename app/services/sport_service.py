@@ -40,8 +40,8 @@ async def create_sport(
 async def get_sports(
     db: AsyncSession, skip: int = 0, limit: int = 100
 ) -> Sequence[Sport]:
-    query = select(Sport).where(Sport.is_active.is_(True)).order_by(
-        Sport.created_at.desc()
+    query = (
+        select(Sport).where(Sport.is_active.is_(True)).order_by(Sport.created_at.desc())
     )
     return (await db.scalars(query.offset(skip).limit(limit))).all()
 
